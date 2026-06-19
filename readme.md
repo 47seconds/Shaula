@@ -1,1 +1,3 @@
 Shaula, an AlgoTrading project...
+
+Posting command: posting --collection . --env ../.env --env dev.env
