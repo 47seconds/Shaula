@@ -8,7 +8,7 @@ type Response struct {
 	Error   string `json:"error,omitempty"`
 }
 
-type HistoricalBacktestResponse struct {
+type HistoricalResponse struct {
 	Symbol    string `json:"symbol"`
 	Timeframe string `json:"timeframe"`
 	Speed     int    `json:"speed"`

@@ -16,25 +16,34 @@ func HealthCheck(c *gin.Context) {
 	c.JSON(utils.OK, resp)
 }
 
-func HistoricalBacktest(c *gin.Context) {
-	var req models.HistoricalBacktestRequest
+func Historical(c *gin.Context) {
+	var req models.HistoricalRequest
 
-	if err := c.ShouldBindQuery(&req); err != nil {
-		c.JSON(utils.BAD_REQUEST, utils.ErrorResponse(utils.BAD_REQUEST, err.Error()))
+	if err := c.ShouldBindJSON(&req); err != nil {
+		errMsg := ""
+
+		if err.Error() == "EOF" {
+			errMsg = "request body is required"
+		} else {
+			errMsg = err.Error()
+		}
+
+		c.JSON(
+			utils.BAD_REQUEST,
+			utils.ErrorResponse(
+				utils.BAD_REQUEST,
+				errMsg,
+			),
+		)
 		return
 	}
 
 	errMsg := ""
 
 	if req.Speed < 0 {
-		errMsg += "Speed must be non-negative."
+		errMsg += "Speed must be non-negative"
 	}
 
-	if req.Symbol == "" {
-		errMsg += "Symbol is required."
-	}
-
-	// These are default values, so we don't need to validate them
 	if req.Timeframe == "" {
 		req.Timeframe = "1m"
 	}
@@ -44,21 +53,28 @@ func HistoricalBacktest(c *gin.Context) {
 	}
 
 	if errMsg != "" {
-		c.JSON(utils.BAD_REQUEST, utils.ErrorResponse(utils.BAD_REQUEST, errMsg))
+		c.JSON(
+			utils.BAD_REQUEST,
+			utils.ErrorResponse(
+				utils.BAD_REQUEST,
+				errMsg,
+			),
+		)
 		return
 	}
 
-	respData := models.HistoricalBacktestResponse{
+	respData := models.HistoricalResponse{
 		Symbol:    req.Symbol,
 		Timeframe: req.Timeframe,
 		Speed:     req.Speed,
 		Status:    "running",
 	}
 
-	resp := utils.SuccessResponse(
-		"Historical backtest started",
-		respData,
+	c.JSON(
+		utils.OK,
+		utils.SuccessResponse(
+			"Historical backtest started",
+			respData,
+		),
 	)
-
-	c.JSON(utils.OK, resp)
 }

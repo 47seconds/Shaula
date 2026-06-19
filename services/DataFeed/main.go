@@ -12,7 +12,7 @@ func main() {
 
 	r.GET("/health", handlers.HealthCheck)
 
-	r.POST("/historical-backtest", handlers.HistoricalBacktest)
+	r.POST("/historical", handlers.Historical)
 
 	r.Run(":" + utils.GetEnvString("DATAFEED_PORT", "3047"))
 }

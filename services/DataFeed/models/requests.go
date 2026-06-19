@@ -1,7 +1,7 @@
 package models
 
-type HistoricalBacktestRequest struct {
-	Symbol    string `json:"symbol"`
-	Timeframe string `json:"timeframe,omitempty"`
-	Speed     int    `json:"speed,omitempty"`
+type HistoricalRequest struct {
+	Symbol    string `json:"symbol" binding:"required"`
+	Timeframe string `json:"timeframe"`
+	Speed     int    `json:"speed"`
 }
