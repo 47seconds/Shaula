@@ -12,6 +12,18 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./services/DB/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+  
+  datafeed:
+    build:
+      context: ./services/DataFeed
+
+    container_name: datafeed
+
+    ports:
+      - "3047:3047"
+
+    depends_on:
+      - postgres
 
 volumes:
   postgres_data:
