@@ -11,7 +11,7 @@ func main() {
 
 	r.GET("/health", handlers.HealthCheck)
 
-	r.GET("/historical-backtest", handlers.HistoricalBacktest)
+	r.POST("/historical-backtest", handlers.HistoricalBacktest)
 
 	r.Run(":3047")
 }
