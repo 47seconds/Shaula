@@ -2,6 +2,7 @@ package main
 
 import (
 	"datafeed/handlers"
+	"datafeed/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,5 +14,5 @@ func main() {
 
 	r.POST("/historical-backtest", handlers.HistoricalBacktest)
 
-	r.Run(":3047")
+	r.Run(":" + utils.GetEnvString("DATAFEED_PORT", "3047"))
 }
