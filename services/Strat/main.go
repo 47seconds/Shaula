@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"strat/handlers"
+	"strat/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,8 +15,7 @@ func main() {
 
 	r.GET("/historical-ws", handlers.HistoricalWS)
 
-	log.Println("Starting Strat service on :3048")
-	if err := r.Run(":3048"); err != nil {
+	if err := r.Run(":" + utils.GetEnvString("STRAT_PORT", "3048")); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }

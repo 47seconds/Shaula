@@ -1,0 +1,10 @@
+name: historical-ws
+description: historical ws connection request for strategy and analysis
+url: $HOST_URL_BASE:$STRAT_PORT/historical-ws
+params:
+- name: symbol
+  value: ADANIENT
+- name: timeframe
+  value: 1m
+- name: speed
+  value: '60'

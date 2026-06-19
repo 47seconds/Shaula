@@ -1,48 +1,41 @@
 package handlers
 
 import (
-	"log"
-	"net/http"
-	"time"
+	"strat/utils"
 
-	"strat/models"
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
+	// "github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true // Allow all origins for development
-	},
-}
-
 func HistoricalWS(c *gin.Context) {
-	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-	if err != nil {
-		log.Println("Failed to upgrade to websocket:", err)
+	symbol := c.Query("symbol")
+
+	if symbol == "" {
+		c.JSON(
+			utils.BAD_REQUEST,
+			utils.ErrorResponse(
+				utils.BAD_REQUEST,
+				"symbol is required",
+			),
+		)
 		return
 	}
-	defer conn.Close()
 
-	for {
-		var candle models.Candle
+	timeframe := c.DefaultQuery("timeframe", "1m")
+	
+	speed := utils.StringToInt(
+		c.DefaultQuery("speed", "60"),
+		60,
+	)
 
-		err := conn.ReadJSON(&candle)
-		if err != nil {
-			log.Println("WebSocket read error:", err)
-			break
-		}
+	resp := utils.SuccessResponse(
+		"WebSocket request validated",
+		gin.H{
+			"symbol":    symbol,
+			"timeframe": timeframe,
+			"speed":     speed,
+		},
+	)
 
-		log.Printf(
-			"%s %s %.2f",
-			candle.Symbol,
-			candle.Timestamp.Format(time.RFC3339),
-			candle.Close,
-		)
-
-		// strategy.Process(candle)
-	}
+	c.JSON(utils.OK, resp)
 }
-

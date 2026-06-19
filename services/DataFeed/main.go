@@ -14,5 +14,7 @@ func main() {
 
 	r.POST("/historical", handlers.Historical)
 
-	r.Run(":" + utils.GetEnvString("DATAFEED_PORT", "3047"))
+	if err := r.Run(":" + utils.GetEnvString("DATAFEED_PORT", "3047")); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }
