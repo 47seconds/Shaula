@@ -1,24 +1,52 @@
 package handlers
 
 import (
-	"strconv"
-
 	"github.com/gin-gonic/gin"
+
+	"datafeed/models"
+	"datafeed/utils"
 )
 
-func HistoricalBacktest(c *gin.Context) {
-	symbol := c.DefaultQuery("symbol", "ADANIENT")
-	timeframe := c.DefaultQuery("timeframe", "1m")
+func HealthCheck(c *gin.Context) {
+	resp := utils.SuccessResponse(
+		"DataFeed service is healthy",
+		nil,
+	)
 
-	speedStr := c.DefaultQuery("speed", "60")
-	speed, err := strconv.Atoi(speedStr)
-	if err != nil {
-		speed = 60
+	c.JSON(200, resp)
+}
+
+func HistoricalBacktest(c *gin.Context) {
+	var req models.HistoricalBacktestRequest
+
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(400, utils.ErrorResponse(400, err.Error()))
+		return
 	}
 
-	c.JSON(200, gin.H{
-		"symbol":    symbol,
-		"timeframe": timeframe,
-		"speed":     speed,
-	})
+	if req.Symbol == "" {
+		req.Symbol = "ADANIENT"
+	}
+
+	if req.Timeframe == "" {
+		req.Timeframe = "1m"
+	}
+
+	if req.Speed == 0 {
+		req.Speed = 60
+	}
+
+	respData := models.HistoricalBacktestResponse{
+		Symbol:    req.Symbol,
+		Timeframe: req.Timeframe,
+		Speed:     req.Speed,
+		Status:    "running",
+	}
+
+	resp := utils.SuccessResponse(
+		"Historical backtest started",
+		respData,
+	)
+
+	c.JSON(200, resp)
 }
