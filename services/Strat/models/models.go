@@ -14,7 +14,3 @@ type Candle struct {
 
 	Volume float64 `json:"volume"`
 }
-
-type Feed interface {
-	Next() (*Candle, error)
-}

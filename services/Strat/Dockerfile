@@ -7,14 +7,14 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o datafeed .
+RUN CGO_ENABLED=0 GOOS=linux go build -o strat .
 
 FROM alpine:latest
 
 WORKDIR /app
 
-COPY --from=builder /app/datafeed .
+COPY --from=builder /app/strat .
 
-EXPOSE 3047
+EXPOSE 3048
 
-CMD ["./datafeed"]
+CMD ["./strat"]

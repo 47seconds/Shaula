@@ -16,14 +16,23 @@ services:
   datafeed:
     build:
       context: ./services/DataFeed
-
+      dockerfile: Dockerfile
     container_name: datafeed
-
     ports:
       - "3047:3047"
-
     depends_on:
       - postgres
+
+  strat:
+    build:
+      context: ./services/Strat
+      dockerfile: Dockerfile
+    container_name: strat
+    ports:
+      - "3048:3048"
+    depends_on:
+      - postgres
+      - datafeed
 
 volumes:
   postgres_data:

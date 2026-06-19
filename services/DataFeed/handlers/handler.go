@@ -1,3 +1,11 @@
+package handlers
+
+import (
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+)
+
 func HistoricalBacktest(c *gin.Context) {
 	symbol := c.DefaultQuery("symbol", "ADANIENT")
 	timeframe := c.DefaultQuery("timeframe", "1m")
