@@ -12,6 +12,8 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./services/DB/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    networks:
+      - shaula
   
   datafeed:
     build:
@@ -25,10 +27,14 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+      STRAT_HOST: ${STRAT_HOST}
+      STRAT_PORT: ${STRAT_PORT}
     ports:
       - "${DATAFEED_PORT}:${DATAFEED_PORT}"
     depends_on:
       - postgres
+    networks:
+      - shaula
 
   strat:
     build:
@@ -37,11 +43,19 @@ services:
     container_name: strat
     environment:
       STRAT_PORT: ${STRAT_PORT}
+      DATAFEED_HOST: ${DATAFEED_HOST}
+      DATAFEED_PORT: ${DATAFEED_PORT}
     ports:
       - "${STRAT_PORT}:${STRAT_PORT}"
     depends_on:
       - postgres
       - datafeed
+    networks:
+      - shaula
 
 volumes:
   postgres_data:
+
+networks:
+  shaula:
+    driver: bridge

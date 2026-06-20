@@ -13,6 +13,8 @@ func main() {
 
 	r.GET("/health", handlers.HealthCheck)
 
+	r.POST("/historical", handlers.Historical)
+
 	r.GET("/historical-ws", handlers.HistoricalWS)
 
 	if err := r.Run(":" + utils.GetEnvString("STRAT_PORT", "3048")); err != nil {

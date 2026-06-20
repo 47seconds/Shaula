@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"datafeed/handlers"
 	"datafeed/utils"
 
