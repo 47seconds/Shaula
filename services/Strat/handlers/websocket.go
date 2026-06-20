@@ -59,6 +59,8 @@ func HistoricalWS(c *gin.Context) {
 		"rate":     rate,
 	})
 
+	eng := engine.New()
+
 	for {
 		var msg models.CandleMessage
 
@@ -85,6 +87,11 @@ func HistoricalWS(c *gin.Context) {
 			continue
 		}
 
-		engine.ProcessCandle(msg.Data)
+		eng.ProcessCandle(msg.Data)
 	}
+
+	log.Printf(
+			"Buffer size: %d",
+			eng.Count(),
+		)
 }

@@ -8,3 +8,5 @@ const (
 	NOT_FOUND           = 404
 	INTERNAL_SERVER_ERR = 500
 )
+
+const MAX_CANDLES_SIZE = 1000
