@@ -7,6 +7,7 @@ import (
 	"strat/utils"
 	"strat/models"
 	"strat/engine"
+	"strat/strategies"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -59,7 +60,10 @@ func HistoricalWS(c *gin.Context) {
 		"rate":     rate,
 	})
 
-	eng := engine.New()
+	eng := engine.New(
+		&strategies.SMA20{},
+		// &strategies.RSI14{},
+	)
 
 	for {
 		var msg models.CandleMessage

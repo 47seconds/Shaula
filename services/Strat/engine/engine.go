@@ -6,17 +6,20 @@ import (
 
 	"strat/models"
 	"strat/utils"
-	"strat/indicators"
+	// "strat/indicators"
+	"strat/strategies"
 )
 
 type Engine struct {
 	Candles []models.Candle
 	MaxSize int
+	Strategies []strategies.Strategy
 }
 
-func New() *Engine {
+func New(strats ...strategies.Strategy) *Engine {
 	return &Engine{
-		MaxSize: utils.MAX_CANDLES_SIZE,
+		MaxSize:    utils.MAX_CANDLES_SIZE,
+		Strategies: strats,
 	}
 }
 
@@ -25,41 +28,29 @@ func (e *Engine) Count() int {
 }
 
 func (e *Engine) ProcessCandle(candle models.Candle) {
-	// log.Printf(
-	// 	"%s %s O:%.2f H:%.2f L:%.2f C:%.2f V:%.2f",
-	// 	candle.Symbol,
-	// 	candle.Timestamp.Format(time.RFC3339),
-	// 	candle.Open,
-	// 	candle.High,
-	// 	candle.Low,
-	// 	candle.Close,
-	// 	candle.Volume,
-	// )
-
 	e.Candles = append(e.Candles, candle)
 
 	if len(e.Candles) > e.MaxSize {
 		e.Candles = e.Candles[1:]
 	}
 
-	// Prototype: Calculate SMA20
-	last20 := e.Last(20)
+	for _, strategy := range e.Strategies {
+		signal := strategy.OnCandle(
+			candle,
+			e.Candles,
+		)
 
-	if len(last20) == 20 {
-		sma20 := indicators.SMA(last20)
+		if signal == nil {
+			continue
+		}
 
 		log.Printf(
-			"Close: %.2f SMA20: %.2f",
-			candle.Close,
-			sma20,
+			"[%s] %s %.2f",
+			strategy.Name(),
+			signal.Type,
+			signal.Price,
 		)
 	}
-
-	// SMA
-	// EMA
-	// RSI
-	// Signal generation
-	// Paper orders
 }
 
 func (e *Engine) Last(n int) []models.Candle {
