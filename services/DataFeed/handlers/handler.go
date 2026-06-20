@@ -3,12 +3,17 @@ package handlers
 import (
 	"log"
 	"time"
+	"io"
+	"context"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/jackc/pgx/v4"
 
+	"datafeed/db"
 	"datafeed/models"
 	"datafeed/utils"
+	"datafeed/feeds"
 )
 
 func HealthCheck(c *gin.Context) {
@@ -42,23 +47,32 @@ func Historical(c *gin.Context) {
 		return
 	}
 
-	if req.Speed < 0 {
+	if req.Rate < 0 {
 		c.JSON(
 			utils.BAD_REQUEST,
 			utils.ErrorResponse(
 				utils.BAD_REQUEST,
-				"speed must be non-negative",
+				"rate must be non-negative",
 			),
 		)
 		return
+	} else if req.Rate == 0 {
+		req.Rate = 1
 	}
 
 	if req.Timeframe == "" {
 		req.Timeframe = "1m"
 	}
 
-	if req.Speed == 0 {
-		req.Speed = 60
+	if req.Candles < 0 {
+		c.JSON(
+			utils.BAD_REQUEST,
+			utils.ErrorResponse(
+				utils.BAD_REQUEST,
+				"number of candles must be non-negative, 0 for all",
+			),
+		)
+		return
 	}
 
 	// Start streaming in background
@@ -90,23 +104,47 @@ func Historical(c *gin.Context) {
 			conn.Close()
 		}()
 
-		for i := 0; i < 10; i++ {
-			candle := models.Candle{
-				Symbol:    req.Symbol,
-				Timeframe: req.Timeframe,
-				Timestamp: time.Now(),
+		var rows pgx.Rows
 
-				Open:   100 + float64(i),
-				High:   105 + float64(i),
-				Low:    95 + float64(i),
-				Close:  102 + float64(i),
+		if req.Candles > 0 {
+			rows, err = db.Pool.Query(
+				context.Background(),
+				utils.DB_QUERY_LIMIT,
+				req.Symbol,
+				req.Timeframe,
+				req.Candles,
+			)
+		} else {
+			rows, err = db.Pool.Query(
+				context.Background(),
+				utils.DB_QUERY_ALL,
+				req.Symbol,
+				req.Timeframe,
+			)
+		}
+		if err != nil {
+			log.Printf("Query failed: %v", err)
+			return
+		}
 
-				Volume: 1000,
+		feed := feeds.NewPGFeed(rows)
+		defer feed.Close()
+
+		for {
+			candle, err := feed.Next()
+
+			if err == io.EOF {
+				break
+			}
+
+			if err != nil {
+				log.Printf("Feed error: %v", err)
+				return
 			}
 
 			msg := models.CandleMessage{
 				Type: "candle",
-				Data: candle,
+				Data: *candle,
 			}
 
 			if err := conn.WriteJSON(msg); err != nil {
@@ -114,21 +152,14 @@ func Historical(c *gin.Context) {
 				return
 			}
 
-			log.Printf(
-				"Sent candle %d: %s %.2f",
-				i,
-				candle.Symbol,
-				candle.Close,
-			)
-
-			time.Sleep(time.Second)
+			time.Sleep(time.Second / time.Duration(req.Rate))
 		}
 	}()
 
 	respData := models.HistoricalResponse{
 		Symbol:    req.Symbol,
 		Timeframe: req.Timeframe,
-		Speed:     req.Speed,
+		Rate:     req.Rate,
 		Status:    "running",
 	}
 

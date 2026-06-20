@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"datafeed/db"
 	"datafeed/handlers"
 	"datafeed/utils"
 
@@ -10,6 +11,11 @@ import (
 )
 
 func main() {
+	if err := db.Connect(); err != nil {
+		log.Fatalf("Failed to connect to PostgreSQL: %v", err)
+	}
+	log.Println("Connected to PostgreSQL")
+
 	r := gin.Default()
 
 	r.GET("/health", handlers.HealthCheck)

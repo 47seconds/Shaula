@@ -37,7 +37,7 @@ func Historical(c *gin.Context) {
 		gin.H{
 			"symbol":    req.Symbol,
 			"timeframe": req.Timeframe,
-			"speed":     req.Speed,
+			"rate":     req.Rate,
 		},
 	)
 

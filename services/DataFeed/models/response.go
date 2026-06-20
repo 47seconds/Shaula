@@ -11,6 +11,6 @@ type Response struct {
 type HistoricalResponse struct {
 	Symbol    string `json:"symbol"`
 	Timeframe string `json:"timeframe"`
-	Speed     int    `json:"speed"`
+	Rate     int    `json:"rate"`
 	Status    string `json:"status"`
 }

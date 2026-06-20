@@ -34,12 +34,12 @@ func HistoricalWS(c *gin.Context) {
 
 	timeframe := c.DefaultQuery("timeframe", "1m")
 
-	speed := utils.StringToInt(
-		c.DefaultQuery("speed", "60"),
+	rate := utils.StringToInt(
+		c.DefaultQuery("rate", "60"),
 		60,
 	)
 
-	log.Printf("Received WebSocket request for symbol: %s, timeframe: %s, speed: %d seconds\n", symbol, timeframe, speed)
+	log.Printf("Received WebSocket request for symbol: %s, timeframe: %s, rate: %d seconds\n", symbol, timeframe, rate)
 
 	conn, err := upgrader.Upgrade(
 		c.Writer,
@@ -56,7 +56,7 @@ func HistoricalWS(c *gin.Context) {
 		"type":      "connected",
 		"symbol":    symbol,
 		"timeframe": timeframe,
-		"speed":     speed,
+		"rate":     rate,
 	})
 
 	for {
