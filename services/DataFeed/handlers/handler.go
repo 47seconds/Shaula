@@ -78,7 +78,17 @@ func Historical(c *gin.Context) {
 			log.Printf("Failed to connect to Strat WS: %v", err)
 			return
 		}
-		defer conn.Close()
+		defer func() {
+			conn.WriteMessage(
+				websocket.CloseMessage,
+				websocket.FormatCloseMessage(
+					websocket.CloseNormalClosure,
+					"backtest completed",
+				),
+			)
+
+			conn.Close()
+		}()
 
 		for i := 0; i < 10; i++ {
 			candle := models.Candle{
@@ -94,7 +104,12 @@ func Historical(c *gin.Context) {
 				Volume: 1000,
 			}
 
-			if err := conn.WriteJSON(candle); err != nil {
+			msg := models.CandleMessage{
+				Type: "candle",
+				Data: candle,
+			}
+
+			if err := conn.WriteJSON(msg); err != nil {
 				log.Printf("Failed to send candle: %v", err)
 				return
 			}

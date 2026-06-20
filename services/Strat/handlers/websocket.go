@@ -2,10 +2,11 @@ package handlers
 
 import (
 	"net/http"
-	"time"
 	"log"
 
 	"strat/utils"
+	"strat/models"
+	"strat/engine"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -58,20 +59,32 @@ func HistoricalWS(c *gin.Context) {
 		"speed":     speed,
 	})
 
-	log.Printf("WebSocket connection established for symbol: %s, timeframe: %s, speed: %d seconds\n", symbol, timeframe, speed)
+	for {
+		var msg models.CandleMessage
 
-	for i := 0; i < 10; i++ {
-		conn.WriteJSON(gin.H{
-			"type": "candle",
-			"data": gin.H{
-				"index": i,
-				"open":  100 + i,
-				"high":  105 + i,
-				"low":   95 + i,
-				"close": 102 + i,
-			},
-		})
+		err := conn.ReadJSON(&msg)
+		if err != nil {
+			if websocket.IsCloseError(
+				err,
+				websocket.CloseNormalClosure,
+				websocket.CloseGoingAway,
+			) {
+				log.Printf(
+					"Backtest completed: %s %s",
+					symbol,
+					timeframe,
+				)
+			} else {
+				log.Printf("WS error: %v", err)
+			}
 
-		time.Sleep(time.Second)
+			break
+		}
+
+		if msg.Type != "candle" {
+			continue
+		}
+
+		engine.ProcessCandle(msg.Data)
 	}
 }

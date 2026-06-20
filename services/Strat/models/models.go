@@ -14,3 +14,8 @@ type Candle struct {
 
 	Volume float64 `json:"volume"`
 }
+
+type CandleMessage struct {
+	Type string        `json:"type"`
+	Data Candle `json:"data"`
+}
